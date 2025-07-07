@@ -18,7 +18,7 @@ jobs:
       - name: Write wrangler.toml
         run: |
           echo 'name = "substracker"' > wrangler.toml
-          echo 'main = "index_v3.js"' >> wrangler.toml
+          echo 'main = "index_v4.js"' >> wrangler.toml
           echo "compatibility_date = \"$(date +%F)\"" >> wrangler.toml
           echo 'account_id = "${{ secrets.CF_ACCOUNT_ID }}"' >> wrangler.toml
           echo 'workers_dev = true' >> wrangler.toml
