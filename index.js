@@ -425,23 +425,34 @@ const adminPage = `
     }
 
     /* 响应式优化 */
-    @media (max-width: 768px) {
-      .table-container {
-        overflow-x: auto;
-      }
+    .responsive-table { table-layout: fixed; width: 100%; }
+    .td-content-wrapper { word-wrap: break-word; white-space: normal; text-align: left; width: 100%; }
+    .td-content-wrapper > * { text-align: left; } /* Align content left within the wrapper */
+
+    @media (max-width: 767px) {
+      .table-container { overflow-x: initial; } /* Override previous setting */
+      .responsive-table thead { display: none; }
+      .responsive-table tbody, .responsive-table tr, .responsive-table td { display: block; width: 100%; }
+      .responsive-table tr { margin-bottom: 1.5rem; border: 1px solid #ddd; border-radius: 0.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow: hidden; }
+      .responsive-table td { display: flex; justify-content: flex-start; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid #eee; }
+      .responsive-table td:last-of-type { border-bottom: none; }
+      .responsive-table td:before { content: attr(data-label); font-weight: 600; text-align: left; padding-right: 1rem; color: #374151; white-space: nowrap; }
+      .action-buttons-wrapper { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end; }
+      
       .notes-container, .hover-container {
-        max-width: 120px;
+        max-width: 180px; /* Adjust for new layout */
+        text-align: right;
       }
-      .notes-tooltip, .hover-tooltip {
-        max-width: 250px;
-        left: -50px;
+      .td-content-wrapper .notes-text {
+        text-align: right;
       }
     }
 
-    @media (min-width: 769px) {
+    @media (min-width: 768px) {
       .table-container {
         overflow: visible;
       }
+      /* .td-content-wrapper is aligned left by default */
     }
 
     /* Toast 样式 */
@@ -498,7 +509,7 @@ const adminPage = `
     
     <div class="table-container bg-white rounded-lg overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="w-full divide-y divide-gray-200">
+        <table class="w-full divide-y divide-gray-200 responsive-table">
           <thead class="bg-gray-50">
             <tr>
               <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 25%;">
@@ -1038,27 +1049,27 @@ const adminPage = `
           const startDateHtml = startDateText ? createHoverText(startDateText, 30, 'text-xs text-gray-500 mt-1') : '';
 
           row.innerHTML =
-            '<td class="px-4 py-3">' +
+            '<td data-label="名称" class="px-4 py-3"><div class="td-content-wrapper">' +
               nameHtml +
               notesHtml +
-            '</td>' +
-            '<td class="px-4 py-3">' +
+            '</div></td>' +
+            '<td data-label="类型" class="px-4 py-3"><div class="td-content-wrapper">' +
               '<div class="flex items-center"><i class="fas fa-tag mr-1"></i><span>' + typeHtml + '</span></div>' +
               (periodHtml ? '<div class="flex items-center">' + periodHtml + autoRenewIcon + '</div>' : '') +
-            '</td>' +
-            '<td class="px-4 py-3">' +
+            '</div></td>' +
+            '<td data-label="到期时间" class="px-4 py-3"><div class="td-content-wrapper">' +
               '<div class="text-sm text-gray-900">' + expiryDateText + '</div>' +
               lunarHtml +
               '<div class="text-xs text-gray-500 mt-1">' + daysLeftText + '</div>' +
               startDateHtml +
-            '</td>' +
-            '<td class="px-4 py-3 text-sm text-gray-900">' +
+            '</div></td>' +
+            '<td data-label="提醒设置" class="px-4 py-3"><div class="td-content-wrapper">' +
               '<div><i class="fas fa-bell mr-1"></i>提前' + (subscription.reminderDays || 0) + '天</div>' +
               (subscription.reminderDays === 0 ? '<div class="text-xs text-gray-500 mt-1">仅到期日提醒</div>' : '') +
-            '</td>' +
-            '<td class="px-4 py-3">' + statusHtml + '</td>' +
-            '<td class="px-4 py-3 text-sm font-medium">' +
-              '<div class="flex flex-col gap-1 lg:flex-row lg:flex-wrap">' +
+            '</div></td>' +
+            '<td data-label="状态" class="px-4 py-3"><div class="td-content-wrapper">' + statusHtml + '</div></td>' +
+            '<td data-label="操作" class="px-4 py-3">' +
+              '<div class="action-buttons-wrapper">' +
                 '<button class="edit btn-primary text-white px-2 py-1 rounded text-xs whitespace-nowrap" data-id="' + subscription.id + '"><i class="fas fa-edit mr-1"></i>编辑</button>' +
                 '<button class="test-notify btn-info text-white px-2 py-1 rounded text-xs whitespace-nowrap" data-id="' + subscription.id + '"><i class="fas fa-paper-plane mr-1"></i>测试</button>' +
                 '<button class="delete btn-danger text-white px-2 py-1 rounded text-xs whitespace-nowrap" data-id="' + subscription.id + '"><i class="fas fa-trash-alt mr-1"></i>删除</button>' +
@@ -1575,8 +1586,12 @@ const configPage = `
                 <input type="checkbox" name="enabledNotifiers" value="wechatbot" class="form-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
                 <span class="ml-2 text-sm text-gray-700">企业微信机器人</span>
               </label>
+              <label class="inline-flex items-center">
+                <input type="checkbox" name="enabledNotifiers" value="email" class="form-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                <span class="ml-2 text-sm text-gray-700">邮件通知</span>
+              </label>
             </div>
-            <div class="mt-2 flex space-x-4">
+            <div class="mt-2 flex flex-wrap gap-4">
               <a href="https://www.notifyx.cn/" target="_blank" class="text-indigo-600 hover:text-indigo-800 text-sm">
                 <i class="fas fa-external-link-alt ml-1"></i> NotifyX官网
               </a>
@@ -1585,6 +1600,9 @@ const configPage = `
               </a>
               <a href="https://developer.work.weixin.qq.com/document/path/91770" target="_blank" class="text-indigo-600 hover:text-indigo-800 text-sm">
                 <i class="fas fa-external-link-alt ml-1"></i> 企业微信机器人文档
+              </a>
+              <a href="https://developers.cloudflare.com/workers/tutorials/send-emails-with-resend/" target="_blank" class="text-indigo-600 hover:text-indigo-800 text-sm">
+                <i class="fas fa-external-link-alt ml-1"></i> 获取 Resend API Key
               </a>
             </div>
           </div>
@@ -1691,8 +1709,39 @@ const configPage = `
               </button>
             </div>
           </div>
+
+          <div id="emailConfig" class="config-section">
+            <h4 class="text-md font-medium text-gray-900 mb-3">邮件通知 配置</h4>
+            <div class="grid grid-cols-1 gap-4 mb-4">
+              <div>
+                <label for="resendApiKey" class="block text-sm font-medium text-gray-700">Resend API Key</label>
+                <input type="text" id="resendApiKey" placeholder="re_xxxxxxxxxx" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <p class="mt-1 text-sm text-gray-500">从 <a href="https://resend.com/api-keys" target="_blank" class="text-indigo-600 hover:text-indigo-800">Resend控制台</a> 获取的 API Key</p>
+              </div>
+              <div>
+                <label for="emailFrom" class="block text-sm font-medium text-gray-700">发件人邮箱</label>
+                <input type="email" id="emailFrom" placeholder="noreply@yourdomain.com" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <p class="mt-1 text-sm text-gray-500">必须是已在Resend验证的域名邮箱</p>
+              </div>
+              <div>
+                <label for="emailFromName" class="block text-sm font-medium text-gray-700">发件人名称</label>
+                <input type="text" id="emailFromName" placeholder="订阅提醒系统" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <p class="mt-1 text-sm text-gray-500">显示在邮件中的发件人名称</p>
+              </div>
+              <div>
+                <label for="emailTo" class="block text-sm font-medium text-gray-700">收件人邮箱</label>
+                <input type="email" id="emailTo" placeholder="user@example.com" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <p class="mt-1 text-sm text-gray-500">接收通知邮件的邮箱地址</p>
+              </div>
+            </div>
+            <div class="flex justify-end">
+              <button type="button" id="testEmailBtn" class="btn-secondary text-white px-4 py-2 rounded-md text-sm font-medium">
+                <i class="fas fa-paper-plane mr-2"></i>测试 邮件通知
+              </button>
+            </div>
+          </div>
         </div>
-        
+
         <div class="flex justify-end">
           <button type="submit" class="btn-primary text-white px-6 py-2 rounded-md text-sm font-medium">
             <i class="fas fa-save mr-2"></i>保存配置
@@ -1743,6 +1792,10 @@ const configPage = `
         document.getElementById('wechatbotMsgType').value = config.WECHATBOT_MSG_TYPE || 'text';
         document.getElementById('wechatbotAtMobiles').value = config.WECHATBOT_AT_MOBILES || '';
         document.getElementById('wechatbotAtAll').checked = config.WECHATBOT_AT_ALL === 'true';
+        document.getElementById('resendApiKey').value = config.RESEND_API_KEY || '';
+        document.getElementById('emailFrom').value = config.EMAIL_FROM || '';
+        document.getElementById('emailFromName').value = config.EMAIL_FROM_NAME || '订阅提醒系统';
+        document.getElementById('emailTo').value = config.EMAIL_TO || '';
   
         // 处理多选通知渠道
         const enabledNotifiers = config.ENABLED_NOTIFIERS || ['notifyx'];
@@ -1762,9 +1815,10 @@ const configPage = `
       const notifyxConfig = document.getElementById('notifyxConfig');
       const webhookConfig = document.getElementById('webhookConfig');
       const wechatbotConfig = document.getElementById('wechatbotConfig');
+      const emailConfig = document.getElementById('emailConfig');
 
       // 重置所有配置区域
-      [telegramConfig, notifyxConfig, webhookConfig, wechatbotConfig].forEach(config => {
+      [telegramConfig, notifyxConfig, webhookConfig, wechatbotConfig, emailConfig].forEach(config => {
         config.classList.remove('active', 'inactive');
         config.classList.add('inactive');
       });
@@ -1783,6 +1837,9 @@ const configPage = `
         } else if (type === 'wechatbot') {
           wechatbotConfig.classList.remove('inactive');
           wechatbotConfig.classList.add('active');
+        } else if (type === 'email') {
+          emailConfig.classList.remove('inactive');
+          emailConfig.classList.add('active');
         }
       });
     }
@@ -1820,6 +1877,10 @@ const configPage = `
         WECHATBOT_MSG_TYPE: document.getElementById('wechatbotMsgType').value,
         WECHATBOT_AT_MOBILES: document.getElementById('wechatbotAtMobiles').value.trim(),
         WECHATBOT_AT_ALL: document.getElementById('wechatbotAtAll').checked.toString(),
+        RESEND_API_KEY: document.getElementById('resendApiKey').value.trim(),
+        EMAIL_FROM: document.getElementById('emailFrom').value.trim(),
+        EMAIL_FROM_NAME: document.getElementById('emailFromName').value.trim(),
+        EMAIL_TO: document.getElementById('emailTo').value.trim(),
         ENABLED_NOTIFIERS: enabledNotifiers
       };
 
@@ -1860,12 +1921,14 @@ const configPage = `
     async function testNotification(type) {
       const buttonId = type === 'telegram' ? 'testTelegramBtn' :
                       type === 'notifyx' ? 'testNotifyXBtn' :
-                      type === 'wechatbot' ? 'testWechatBotBtn' : 'testWebhookBtn';
+                      type === 'wechatbot' ? 'testWechatBotBtn' :
+                      type === 'email' ? 'testEmailBtn' : 'testWebhookBtn';
       const button = document.getElementById(buttonId);
       const originalContent = button.innerHTML;
       const serviceName = type === 'telegram' ? 'Telegram' :
                           type === 'notifyx' ? 'NotifyX' :
-                          type === 'wechatbot' ? '企业微信机器人' : '企业微信应用通知';
+                          type === 'wechatbot' ? '企业微信机器人' :
+                          type === 'email' ? '邮件通知' : '企业微信应用通知';
 
       button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>测试中...';
       button.disabled = true;
@@ -1914,6 +1977,18 @@ const configPage = `
           button.disabled = false;
           return;
         }
+      } else if (type === 'email') {
+        config.RESEND_API_KEY = document.getElementById('resendApiKey').value.trim();
+        config.EMAIL_FROM = document.getElementById('emailFrom').value.trim();
+        config.EMAIL_FROM_NAME = document.getElementById('emailFromName').value.trim();
+        config.EMAIL_TO = document.getElementById('emailTo').value.trim();
+
+        if (!config.RESEND_API_KEY || !config.EMAIL_FROM || !config.EMAIL_TO) {
+          showToast('请先填写 Resend API Key、发件人邮箱和收件人邮箱', 'warning');
+          button.innerHTML = originalContent;
+          button.disabled = false;
+          return;
+        }
       }
 
       try {
@@ -1953,6 +2028,10 @@ const configPage = `
 
     document.getElementById('testWechatBotBtn').addEventListener('click', () => {
       testNotification('wechatbot');
+    });
+
+    document.getElementById('testEmailBtn').addEventListener('click', () => {
+      testNotification('email');
     });
 
     window.addEventListener('load', loadConfig);
@@ -2085,6 +2164,10 @@ const api = {
             WECHATBOT_MSG_TYPE: newConfig.WECHATBOT_MSG_TYPE || 'text',
             WECHATBOT_AT_MOBILES: newConfig.WECHATBOT_AT_MOBILES || '',
             WECHATBOT_AT_ALL: newConfig.WECHATBOT_AT_ALL || 'false',
+            RESEND_API_KEY: newConfig.RESEND_API_KEY || '',
+            EMAIL_FROM: newConfig.EMAIL_FROM || '',
+            EMAIL_FROM_NAME: newConfig.EMAIL_FROM_NAME || '',
+            EMAIL_TO: newConfig.EMAIL_TO || '',
             ENABLED_NOTIFIERS: newConfig.ENABLED_NOTIFIERS || ['notifyx']
           };
 
@@ -2170,6 +2253,20 @@ const api = {
 
           success = await sendWechatBotNotification(title, content, testConfig);
           message = success ? '企业微信机器人通知发送成功' : '企业微信机器人通知发送失败，请检查配置';
+        } else if (body.type === 'email') {
+          const testConfig = {
+            ...config,
+            RESEND_API_KEY: body.RESEND_API_KEY,
+            EMAIL_FROM: body.EMAIL_FROM,
+            EMAIL_FROM_NAME: body.EMAIL_FROM_NAME,
+            EMAIL_TO: body.EMAIL_TO
+          };
+
+          const title = '测试通知';
+          const content = '这是一条测试通知，用于验证邮件通知功能是否正常工作。\n\n发送时间: ' + new Date().toLocaleString();
+
+          success = await sendEmailNotification(title, content, testConfig);
+          message = success ? '邮件通知发送成功' : '邮件通知发送失败，请检查配置';
         }
 
         return new Response(
@@ -2370,6 +2467,10 @@ async function getConfig(env) {
       WECHATBOT_MSG_TYPE: config.WECHATBOT_MSG_TYPE || 'text',
       WECHATBOT_AT_MOBILES: config.WECHATBOT_AT_MOBILES || '',
       WECHATBOT_AT_ALL: config.WECHATBOT_AT_ALL || 'false',
+      RESEND_API_KEY: config.RESEND_API_KEY || '',
+      EMAIL_FROM: config.EMAIL_FROM || '',
+      EMAIL_FROM_NAME: config.EMAIL_FROM_NAME || '',
+      EMAIL_TO: config.EMAIL_TO || '',
       ENABLED_NOTIFIERS: config.ENABLED_NOTIFIERS || ['notifyx']
     };
 
@@ -2395,6 +2496,10 @@ async function getConfig(env) {
       WECHATBOT_MSG_TYPE: 'text',
       WECHATBOT_AT_MOBILES: '',
       WECHATBOT_AT_ALL: 'false',
+      RESEND_API_KEY: '',
+      EMAIL_FROM: '',
+      EMAIL_FROM_NAME: '',
+      EMAIL_TO: '',
       ENABLED_NOTIFIERS: ['notifyx']
     };
   }
@@ -2812,6 +2917,11 @@ async function sendNotificationToAllChannels(title, commonContent, config, logPr
         const result = await sendWeComNotification(weixinContent, config);
         console.log(`${logPrefix} 发送企业微信通知 ${result.success ? '成功' : '失败'}. ${result.message}`);
     }
+    if (config.ENABLED_NOTIFIERS.includes('email')) {
+        const emailContent = commonContent.replace(/(\**|\*|##|#|`)/g, '');
+        const success = await sendEmailNotification(title, emailContent, config);
+        console.log(`${logPrefix} 发送邮件通知 ${success ? '成功' : '失败'}`);
+    }
 }
 
 async function sendTelegramNotification(message, config) {
@@ -2868,6 +2978,89 @@ async function sendNotifyXNotification(title, content, description, config) {
     return result.status === 'queued';
   } catch (error) {
     console.error('[NotifyX] 发送通知失败:', error);
+    return false;
+  }
+}
+
+async function sendEmailNotification(title, content, config) {
+  try {
+    if (!config.RESEND_API_KEY || !config.EMAIL_FROM || !config.EMAIL_TO) {
+      console.error('[邮件通知] 通知未配置，缺少必要参数');
+      return false;
+    }
+
+    console.log('[邮件通知] 开始发送邮件到: ' + config.EMAIL_TO);
+
+    // 生成HTML邮件内容
+    const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 20px; text-align: center; }
+        .header h1 { color: white; margin: 0; font-size: 24px; }
+        .content { padding: 30px 20px; }
+        .content h2 { color: #333; margin-top: 0; }
+        .content p { color: #666; line-height: 1.6; margin: 16px 0; }
+        .footer { background-color: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 14px; }
+        .highlight { background-color: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .button { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 ${title}</h1>
+        </div>
+        <div class="content">
+            <div class="highlight">
+                ${content.replace(/\n/g, '<br>')}
+            </div>
+            <p>此邮件由订阅管理系统自动发送，请及时处理相关订阅事务。</p>
+        </div>
+        <div class="footer">
+            <p>订阅管理系统 | 发送时间: ${new Date().toLocaleString()}</p>
+        </div>
+    </div>
+</body>
+</html>`;
+
+    const fromEmail = config.EMAIL_FROM_NAME ?
+      `${config.EMAIL_FROM_NAME} <${config.EMAIL_FROM}>` :
+      config.EMAIL_FROM;
+
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.RESEND_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: fromEmail,
+        to: config.EMAIL_TO,
+        subject: title,
+        html: htmlContent,
+        text: content // 纯文本备用
+      })
+    });
+
+    const result = await response.json();
+    console.log('[邮件通知] 发送结果:', response.status, result);
+
+    if (response.ok && result.id) {
+      console.log('[邮件通知] 邮件发送成功，ID:', result.id);
+      return true;
+    } else {
+      console.error('[邮件通知] 邮件发送失败:', result);
+      return false;
+    }
+  } catch (error) {
+    console.error('[邮件通知] 发送邮件失败:', error);
     return false;
   }
 }
