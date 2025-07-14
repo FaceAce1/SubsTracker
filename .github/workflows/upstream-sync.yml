@@ -32,8 +32,3 @@ jobs:
         run: |
           echo "[Error] 因为上游仓库 workflow 文件变更导致自动更新被暂停，请手动同步 Fork"
           exit 1
-      - name: Trigger Deploy Workflow
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: deploy.yml
-          token: ${{ secrets.GITHUB_TOKEN }}          
