@@ -2,6 +2,7 @@ name: Upstream Sync
 
 permissions:
   contents: write
+  workflows: write  # 新增：添加触发其他工作流的权限
 
 on:
   schedule:
@@ -32,10 +33,9 @@ jobs:
         run: |
           echo "[Error] 因为上游仓库 workflow 文件变更导致自动更新被暂停，请手动同步 Fork"
           exit 1
-          - name: Sync check
 
       - name: Trigger Deploy Workflow
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: deploy.yml
-          token: ${{ secrets.GITHUB_TOKEN }}  
+          token: ${{ secrets.GITHUB_TOKEN }}
