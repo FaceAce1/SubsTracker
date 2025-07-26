@@ -2,7 +2,6 @@ name: Upstream Sync
 
 permissions:
   contents: write
-  workflows: write  # 新增：添加触发其他工作流的权限
 
 on:
   schedule:
